@@ -108,6 +108,7 @@ body{background:#0b0b0f;color:#f3f4f6;font-family:Inter,sans-serif;-webkit-tap-h
    <div id="sharedMembers" class="space-y-2"></div>
    <button onclick="openSharedPayment()" class="btn w-full">Registrar movimiento</button>
    <div><h3 class="font-bold mb-3">Historial compartido</h3><div id="sharedHistory" class="panel divide-y divide-line"></div></div>
+   <button onclick="askDeleteWallet()" class="w-full text-sm text-rose-400 hover:text-rose-300 py-3 border border-line rounded-lg">Eliminar esta cartera compartida</button>
   </div>
  </section>
 </main>
@@ -189,6 +190,16 @@ body{background:#0b0b0f;color:#f3f4f6;font-family:Inter,sans-serif;-webkit-tap-h
  </form>
 </div>
 
+<!-- Eliminar cartera compartida -->
+<div id="modalDeleteWallet" class="modal" onclick="if(event.target===this)closeModal('modalDeleteWallet')">
+ <div class="sheet space-y-4">
+  <h3 class="text-lg font-bold">¿Eliminar cartera compartida?</h3>
+  <p class="text-sm text-gray-300">¿Seguro que querés eliminar <strong id="delWalletTitle"></strong>?</p>
+  <p class="text-xs text-gray-500">Se borra para las dos personas, junto con todo su historial y las deudas. Tus cuentas personales no cambian. No se puede deshacer.</p>
+  <div class="grid grid-cols-2 gap-3"><button onclick="closeModal('modalDeleteWallet')" class="btn2">Cancelar</button><button onclick="confirmDeleteWallet()" class="btn !bg-rose-600 hover:!bg-rose-500">Sí, eliminar</button></div>
+ </div>
+</div>
+
 <!-- Unirse -->
 <div id="modalJoin" class="modal" onclick="if(event.target===this)closeModal('modalJoin')">
  <form class="sheet space-y-4" onsubmit="handleJoin(event)">
@@ -210,7 +221,7 @@ body{background:#0b0b0f;color:#f3f4f6;font-family:Inter,sans-serif;-webkit-tap-h
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
 import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-import { getFirestore, doc, getDoc, setDoc, updateDoc, onSnapshot, arrayUnion } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc, onSnapshot, arrayUnion } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBYf9mjOegr0Ure_n6EWGx8Xsxx0VQfPQo",
@@ -241,7 +252,7 @@ const infoRef = () => doc(db,'artifacts',appId,'users',user.uid,'shared','info')
 const walRef = id => doc(db,'artifacts',appId,'public','data','sharedWallets',id);
 const safe = async fn => { try { await fn(); } catch(e){ console.error(e); alert('No se pudo guardar. Revisá la conexión y las reglas de Firestore.\n'+(e.code||e.message)); } };
 
-Object.assign(window,{loginWithGoogle,logoutFirebase,navigateTo,openModal,closeModal,openMovement,handleMovement,handleCategory,createSharedWallet,handleJoin,openSharedPayment,handleSharedPayment,fillSpCats,copyCode,openAdjust,handleAdjust,openWallet,backToList,openReflect,handleReflect});
+Object.assign(window,{loginWithGoogle,logoutFirebase,navigateTo,openModal,closeModal,openMovement,handleMovement,handleCategory,createSharedWallet,handleJoin,openSharedPayment,handleSharedPayment,fillSpCats,copyCode,openAdjust,handleAdjust,openWallet,backToList,openReflect,handleReflect,askDeleteWallet,confirmDeleteWallet});
 
 function openModal(id){ $(id).classList.add('open'); }
 function closeModal(id){ $(id).classList.remove('open'); }
@@ -379,10 +390,27 @@ async function addId(id){
   if(!ids.includes(id)) ids.push(id);
   await setDoc(infoRef(),{walletIds:ids});
 }
+async function removeId(id){
+  const s=await getDoc(infoRef()); const ids=idsOf(s.exists()?s.data():null).filter(x=>x!==id);
+  await setDoc(infoRef(),{walletIds:ids});
+}
+function askDeleteWallet(){
+  const w=wallets[wid]; if(!w) return;
+  $('delWalletTitle').textContent=title(w); openModal('modalDeleteWallet');
+}
+function confirmDeleteWallet(){
+  const id=wid; closeModal('modalDeleteWallet'); if(!id) return;
+  return safe(async()=>{
+    await deleteDoc(walRef(id));
+    unsubW[id]&&unsubW[id](); delete unsubW[id]; delete wallets[id];
+    await removeId(id);
+    backToList(); renderWalletList();
+  });
+}
 function listenWallet(id){
   if(unsubW[id]) return;
   unsubW[id]=onSnapshot(walRef(id),s=>{
-    if(s.exists()) wallets[id]=s.data(); else delete wallets[id];
+    if(s.exists()) wallets[id]=s.data(); else { delete wallets[id]; unsubW[id]&&unsubW[id](); delete unsubW[id]; removeId(id).catch(console.error); }
     renderWalletList();
     if(wid===id){ wallets[id]?renderDetail():backToList(); }
     syncSections();
@@ -406,7 +434,7 @@ function renderWalletList(){
   $('sharedWalletList').innerHTML = ids.length ? ids.map(id=>`<button onclick="openWallet('${id}')" class="panel w-full text-left p-4 hover:border-violet transition">
     <p class="font-semibold">${esc(title(wallets[id]))}</p><p class="text-sm text-gray-400 mt-1">${esc(summaryOf(wallets[id]))}</p></button>`).join('')
     : '<p class="text-sm text-gray-500">Todavía no tenés carteras compartidas. Creá una o pegá el código que te pasaron.</p>';
-  $('dashSharedSummary').innerHTML = ids.length ? ids.map(id=>`<p><span class="text-gray-200">${esc(title(wallets[id]))}</span> · ${esc(summaryOf(wallets[id]))}</p>`).join('') : 'Sin carteras · tocá para crear o unirte';
+  $('dashSharedSummary').textContent = ids.length ? ids.length+(ids.length===1?' cartera compartida':' carteras compartidas') : 'Sin carteras · tocá para crear o unirte';
 }
 function openWallet(id){ wid=id; $('sharedListView').classList.add('hidden'); $('sharedDetailView').classList.remove('hidden'); renderDetail(); window.scrollTo(0,0); }
 function backToList(){ wid=null; $('sharedDetailView').classList.add('hidden'); $('sharedListView').classList.remove('hidden'); }
