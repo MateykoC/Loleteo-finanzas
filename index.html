@@ -581,19 +581,15 @@ service cloud.firestore {
     // ------------------------------------------------------------------
     // GLOBALES & CONFIGURACIÓN FIREBASE
     // ------------------------------------------------------------------
-    const appId = typeof __app_id !== 'undefined' ? __app_id : 'loleteo-app-default';
     
-    // Configuración por defecto o inyectada
-    const firebaseConfig = typeof __firebase_config !== 'undefined' 
-      ? JSON.parse(__firebase_config)
-      : {
-          apiKey: "AIzaSyDemoPlaceholderKey123456789",
-          authDomain: "loleteo-demo.firebaseapp.com",
-          projectId: "loleteo-demo",
-          storageBucket: "loleteo-demo.appspot.com",
-          messagingSenderId: "1234567890",
-          appId: "1:1234567890:web:demo"
-        };
+const firebaseConfig = {
+  apiKey: "AIzaSyBYf9mjOegr0Ure_n6EWGx8Xsxx0VQfPQo",
+  authDomain: "loleteo-finanzas.firebaseapp.com",
+  projectId: "loleteo-finanzas",
+  storageBucket: "loleteo-finanzas.firebasestorage.app",
+  messagingSenderId: "591725380996",
+  appId: "1:591725380996:web:d8d4ab15e315a1181d49d1"
+};
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
