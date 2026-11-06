@@ -1,587 +1,191 @@
 <!DOCTYPE html>
 <html lang="es" class="dark">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>loleteo - Finanzas Personales y Compartidas</title>
-  
-  <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          colors: {
-            brandDark: '#0D0D11',
-            brandCard: '#16161E',
-            brandCardBorder: '#262636',
-            brandViolet: '#9D4EDD',
-            brandVioletDark: '#7B2CBF',
-            brandVioletLight: '#C77DFF'
-          },
-          fontFamily: {
-            sans: ['Inter', 'sans-serif']
-          }
-        }
-      }
-    }
-  </script>
-
-  <!-- Google Fonts & Font Awesome Icons -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-
-  <style>
-    body {
-      background-color: #0D0D11;
-      color: #F3F4F6;
-      font-family: 'Inter', sans-serif;
-    }
-    /* Scrollbar personalizada dark */
-    ::-webkit-scrollbar {
-      width: 6px;
-      height: 6px;
-    }
-    ::-webkit-scrollbar-track {
-      background: #0D0D11;
-    }
-    ::-webkit-scrollbar-thumb {
-      background: #262636;
-      border-radius: 9999px;
-    }
-    ::-webkit-scrollbar-thumb:hover {
-      background: #9D4EDD;
-    }
-    .custom-glass {
-      background: rgba(22, 22, 30, 0.85);
-      backdrop-filter: blur(12px);
-      border: 1px solid rgba(157, 78, 221, 0.15);
-    }
-  </style>
-</head>
-<body class="min-h-screen flex flex-col justify-between selection:bg-brandViolet selection:text-white">
-
-  <!-- CAPA PRINCIPAL / APPLICACIÓN -->
-  <div id="app" class="w-full flex-1 flex flex-col">
-
-    <!-- TOP NAV BAR -->
-    <header class="w-full border-b border-brandCardBorder bg-brandCard/70 backdrop-blur-md sticky top-0 z-40">
-      <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-        
-        <!-- LOGO LOLETEO -->
-        <div class="flex items-center space-x-3 cursor-pointer" onclick="navigateTo('dashboard')">
-          <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-brandViolet to-brandVioletDark flex items-center justify-center shadow-lg shadow-brandViolet/20">
-            <i class="fa-solid font-bold text-white text-lg">l</i>
-          </div>
-          <h1 class="text-2xl font-extrabold tracking-tight select-none">
-            <span class="text-brandViolet">lole</span><span class="text-white">teo</span>
-          </h1>
-        </div>
-
-        <!-- PERFIL & ACCIONES DE SESIÓN -->
-        <div id="userMenu" class="hidden flex items-center space-x-3">
-          <button onclick="openHelpModal()" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-brandCardBorder hover:bg-gray-800 text-gray-300 transition flex items-center gap-1.5">
-            <i class="fa-solid fa-circle-question text-brandViolet"></i>
-            <span class="hidden sm:inline">Guía Firebase</span>
-          </button>
-          
-          <div class="flex items-center space-x-2 pl-2 border-l border-brandCardBorder">
-            <img id="userAvatar" class="w-8 h-8 rounded-full border border-brandViolet/50" src="" alt="Avatar" />
-            <span id="userName" class="text-sm font-semibold hidden md:inline-block max-w-[120px] truncate"></span>
-            <button onclick="logoutFirebase()" title="Cerrar sesión" class="p-2 text-gray-400 hover:text-red-400 transition rounded-lg hover:bg-gray-800/50">
-              <i class="fa-solid fa-right-from-bracket"></i>
-            </button>
-          </div>
-        </div>
-
-      </div>
-    </header>
-
-    <!-- CONTENEDOR PRINCIPAL -->
-    <main class="max-w-6xl w-full mx-auto p-4 sm:p-6 flex-1 flex flex-col justify-center">
-
-      <!-- SCREEN 1: LOGIN (AUTH) -->
-      <section id="authSection" class="flex flex-col items-center justify-center py-12 px-4 text-center">
-        <div class="max-w-md w-full p-8 rounded-2xl custom-glass border border-brandViolet/20 shadow-2xl relative overflow-hidden">
-          <div class="absolute -top-24 -right-24 w-48 h-48 bg-brandViolet/20 rounded-full blur-3xl pointer-events-none"></div>
-          
-          <!-- Logo Grande -->
-          <div class="mb-6 inline-block">
-            <h2 class="text-5xl font-black tracking-tight">
-              <span class="text-brandViolet">lole</span><span class="text-white">teo</span>
-            </h2>
-            <p class="text-xs text-gray-400 mt-2 uppercase tracking-widest font-semibold">Finanzas personales y en pareja</p>
-          </div>
-
-          <p class="text-gray-300 text-sm mb-8 leading-relaxed">
-            Controlá tu dinero personal por categorías y mantené las cuentas claras con tu pareja sin complicaciones.
-          </p>
-
-          <!-- Botón de Login Google -->
-          <button id="btnLoginGoogle" onclick="loginWithGoogle()" class="w-full py-3.5 px-4 bg-white hover:bg-gray-100 text-gray-900 font-semibold rounded-xl transition duration-200 flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transform active:scale-95">
-            <svg class="w-5 h-5" viewBox="0 0 24 24">
-              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
-              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
-            </svg>
-            <span>Iniciar Sesión con Google</span>
-          </button>
-
-          <div class="mt-8 pt-6 border-t border-brandCardBorder flex items-center justify-center gap-2">
-            <button onclick="openHelpModal()" class="text-xs text-brandVioletLight hover:underline flex items-center gap-1">
-              <i class="fa-solid fa-gear"></i> Configurar credenciales Firebase
-            </button>
-          </div>
-        </div>
-      </section>
-
-      <!-- SCREEN 2: DASHBOARD (SELECCIÓN CARTERAS) -->
-      <section id="dashboardSection" class="hidden space-y-6">
-        
-        <!-- Header Dashboard -->
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-brandCardBorder">
-          <div>
-            <h2 class="text-2xl font-bold">¡Hola, <span id="dashUserName" class="text-brandViolet"></span>! 👋</h2>
-            <p class="text-sm text-gray-400">Elegí la cartera que quieras gestionar hoy.</p>
-          </div>
-          <button onclick="openHelpModal()" class="self-start md:self-auto text-xs px-3 py-2 bg-brandCard border border-brandCardBorder rounded-xl hover:border-brandViolet/50 transition flex items-center gap-2">
-            <i class="fa-solid fa-code text-brandViolet"></i> Guía Configuración Firestore
-          </button>
-        </div>
-
-        <!-- TARJETAS SELECCIÓN -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          
-          <!-- Cartera Personal -->
-          <div onclick="navigateTo('personal')" class="group cursor-pointer p-6 rounded-2xl bg-brandCard border border-brandCardBorder hover:border-brandViolet transition-all duration-300 hover:shadow-xl hover:shadow-brandViolet/10 flex flex-col justify-between">
-            <div>
-              <div class="flex items-center justify-between mb-4">
-                <div class="w-12 h-12 rounded-xl bg-brandViolet/10 border border-brandViolet/30 flex items-center justify-center text-brandViolet group-hover:scale-110 transition duration-300">
-                  <i class="fa-solid fa-wallet text-xl"></i>
-                </div>
-                <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-brandViolet/20 text-brandVioletLight">Privado</span>
-              </div>
-              <h3 class="text-xl font-bold mb-2 group-hover:text-brandViolet transition">Mi Cartera Personal</h3>
-              <p class="text-sm text-gray-400 mb-6">Controlá tu saldo en efectivo, transferencias, ahorros y dividilo por monedas sin conversiones automáticas.</p>
-            </div>
-            <div class="flex items-center justify-between pt-4 border-t border-brandCardBorder/60">
-              <span id="dashPersonalSummary" class="text-xs font-medium text-gray-300">Cargando saldos...</span>
-              <div class="w-8 h-8 rounded-lg bg-gray-800 flex items-center justify-center text-gray-300 group-hover:bg-brandViolet group-hover:text-white transition">
-                <i class="fa-solid fa-arrow-right text-xs"></i>
-              </div>
-            </div>
-          </div>
-
-          <!-- Cartera Compartida -->
-          <div onclick="navigateTo('shared')" class="group cursor-pointer p-6 rounded-2xl bg-brandCard border border-brandCardBorder hover:border-brandViolet transition-all duration-300 hover:shadow-xl hover:shadow-brandViolet/10 flex flex-col justify-between">
-            <div>
-              <div class="flex items-center justify-between mb-4">
-                <div class="w-12 h-12 rounded-xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center text-purple-400 group-hover:scale-110 transition duration-300">
-                  <i class="fa-solid fa-heart text-xl"></i>
-                </div>
-                <span id="dashSharedBadge" class="text-xs font-semibold px-2.5 py-1 rounded-full bg-gray-800 text-gray-400">Compartido</span>
-              </div>
-              <h3 class="text-xl font-bold mb-2 group-hover:text-brandViolet transition">Cartera Compartida</h3>
-              <p class="text-sm text-gray-400 mb-6">Llevá la cuenta exacta de quién le debe a quién con tu pareja, registra pagos y mantiene un historial con fecha y hora.</p>
-            </div>
-            <div class="flex items-center justify-between pt-4 border-t border-brandCardBorder/60">
-              <span id="dashSharedSummary" class="text-xs font-medium text-gray-300">Cargando estado...</span>
-              <div class="w-8 h-8 rounded-lg bg-gray-800 flex items-center justify-center text-gray-300 group-hover:bg-brandViolet group-hover:text-white transition">
-                <i class="fa-solid fa-arrow-right text-xs"></i>
-              </div>
-            </div>
-          </div>
-
-        </div>
-      </section>
-
-      <!-- SCREEN 3: CARTERA PERSONAL -->
-      <section id="personalSection" class="hidden space-y-6">
-        
-        <!-- Header Volver -->
-        <div class="flex items-center justify-between">
-          <button onclick="navigateTo('dashboard')" class="text-sm text-gray-400 hover:text-white flex items-center gap-2 transition">
-            <i class="fa-solid fa-arrow-left"></i> Volver al panel
-          </button>
-          <span class="text-xs text-brandViolet font-semibold px-3 py-1 rounded-full bg-brandViolet/10 border border-brandViolet/20">
-            Cartera Personal
-          </span>
-        </div>
-
-        <!-- TARJETA TOTALES CONSOLIDADOS (NO MEZCLA MONEDAS) -->
-        <div class="p-6 rounded-2xl bg-gradient-to-r from-brandCard to-gray-900 border border-brandViolet/30 shadow-xl relative overflow-hidden">
-          <p class="text-xs text-gray-400 font-semibold uppercase tracking-wider mb-2">Total Consolidado por Moneda</p>
-          <div id="personalTotalsContainer" class="flex flex-wrap gap-4 items-baseline">
-            <span class="text-2xl font-bold text-gray-400">Sin dinero registrado</span>
-          </div>
-          <p class="text-xs text-gray-500 mt-3">* Las monedas se mantienen separadas sin realizar conversiones de tipo de cambio.</p>
-        </div>
-
-        <!-- ACCIONES RÁPIDAS & GESTIÓN DE SECCIONES/CATEGORÍAS -->
-        <div class="flex flex-wrap items-center justify-between gap-3">
-          <div class="flex items-center gap-2">
-            <button onclick="openPersonalMovementModal('IN')" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-sm rounded-xl transition flex items-center gap-2 shadow-lg shadow-emerald-900/20">
-              <i class="fa-solid fa-plus-circle"></i> Agregar Dinero
-            </button>
-            <button onclick="openPersonalMovementModal('OUT')" class="px-4 py-2.5 bg-rose-600 hover:bg-rose-500 text-white font-medium text-sm rounded-xl transition flex items-center gap-2 shadow-lg shadow-rose-900/20">
-              <i class="fa-solid fa-minus-circle"></i> Retirar Dinero
-            </button>
-          </div>
-
-          <button onclick="openCategoryModal()" class="px-4 py-2.5 bg-brandCardBorder hover:bg-gray-800 text-gray-200 text-sm font-medium rounded-xl transition flex items-center gap-2">
-            <i class="fa-solid fa-folder-plus text-brandViolet"></i> Nueva Sección/Cuenta
-          </button>
-        </div>
-
-        <!-- GRID DE SECCIONES/CATEGORÍAS (Efectivo, Transferencia, Ahorros, etc) -->
-        <div>
-          <h3 class="text-lg font-bold mb-4 flex items-center gap-2">
-            <i class="fa-solid fa-layer-group text-brandViolet text-sm"></i> Mis Cuentas / Secciones
-          </h3>
-          <div id="personalCategoriesGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            <!-- Renderizado dinámico -->
-          </div>
-        </div>
-
-        <!-- HISTORIAL DE MOVIMIENTOS PERSONALES -->
-        <div class="bg-brandCard border border-brandCardBorder rounded-2xl p-6">
-          <h3 class="text-lg font-bold mb-4 flex items-center gap-2">
-            <i class="fa-solid fa-clock-rotate-left text-brandViolet text-sm"></i> Historial Personal
-          </h3>
-          <div class="overflow-x-auto">
-            <table class="w-full text-left text-sm text-gray-300">
-              <thead class="text-xs uppercase bg-brandDark text-gray-400 border-b border-brandCardBorder">
-                <tr>
-                  <th class="py-3 px-4">Fecha y Hora</th>
-                  <th class="py-3 px-4">Tipo</th>
-                  <th class="py-3 px-4">Sección</th>
-                  <th class="py-3 px-4">Monto</th>
-                  <th class="py-3 px-4">Detalle / Nota</th>
-                </tr>
-              </thead>
-              <tbody id="personalHistoryTable" class="divide-y divide-brandCardBorder">
-                <tr><td colspan="5" class="py-4 text-center text-gray-500">Sin movimientos registrados.</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-      </section>
-
-      <!-- SCREEN 4: CARTERA COMPARTIDA -->
-      <section id="sharedSection" class="hidden space-y-6">
-        
-        <!-- Header Volver -->
-        <div class="flex items-center justify-between">
-          <button onclick="navigateTo('dashboard')" class="text-sm text-gray-400 hover:text-white flex items-center gap-2 transition">
-            <i class="fa-solid fa-arrow-left"></i> Volver al panel
-          </button>
-          <span class="text-xs text-brandViolet font-semibold px-3 py-1 rounded-full bg-brandViolet/10 border border-brandViolet/20">
-            Cartera Compartida
-          </span>
-        </div>
-
-        <!-- SI NO TIENE CARTERA VINCULADA -->
-        <div id="sharedUnlinkedView" class="hidden p-8 rounded-2xl custom-glass text-center max-w-xl mx-auto space-y-6">
-          <div class="w-16 h-16 rounded-2xl bg-brandViolet/20 text-brandViolet flex items-center justify-center mx-auto text-2xl">
-            <i class="fa-solid fa-handshake"></i>
-          </div>
-          <div>
-            <h3 class="text-xl font-bold mb-2">Sin Cartera Compartida Vinculada</h3>
-            <p class="text-sm text-gray-400">Creá una nueva cartera para compartir gastos con tu pareja o unite ingresando el código de invitación que ella te dio.</p>
-          </div>
-
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
-            <button onclick="createSharedWallet()" class="p-4 rounded-xl bg-brandViolet hover:bg-brandVioletDark text-white font-semibold text-sm transition shadow-lg shadow-brandViolet/20">
-              <i class="fa-solid fa-plus mb-2 text-xl block"></i> Crear Nueva Cartera
-            </button>
-            <button onclick="showJoinSharedWalletModal()" class="p-4 rounded-xl bg-brandCardBorder hover:bg-gray-800 text-white font-semibold text-sm transition">
-              <i class="fa-solid fa-key mb-2 text-xl block text-brandVioletLight"></i> Unirme con Código
-            </button>
-          </div>
-        </div>
-
-        <!-- SI TIENE CARTERA VINCULADA -->
-        <div id="sharedLinkedView" class="hidden space-y-6">
-
-          <!-- BANNER DE DEUDAS / BALANCE -->
-          <div class="p-6 rounded-2xl bg-brandCard border border-brandViolet/40 shadow-xl space-y-4">
-            <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-2 pb-4 border-b border-brandCardBorder">
-              <div>
-                <span class="text-xs text-gray-400 font-medium">Código de invitación:</span>
-                <span id="sharedWalletCode" class="ml-2 font-mono font-bold text-brandVioletLight bg-brandDark px-2 py-1 rounded border border-brandCardBorder"></span>
-                <button onclick="copyWalletCode()" title="Copiar código" class="ml-1 text-xs text-gray-400 hover:text-white">
-                  <i class="fa-regular fa-copy"></i>
-                </button>
-              </div>
-              <div class="text-xs text-gray-400">
-                Integrantes: <span id="sharedMembers" class="font-semibold text-gray-200">Cargando...</span>
-              </div>
-            </div>
-
-            <!-- NET BALANCE STATE -->
-            <div>
-              <p class="text-xs uppercase tracking-wider text-gray-400 font-semibold mb-2">Estado de Cuenta / Balance Neto</p>
-              <div id="sharedBalanceDisplay" class="flex flex-col gap-2">
-                <!-- Se renderiza dinámicamente -->
-              </div>
-            </div>
-          </div>
-
-          <!-- BOTÓN REGISTRAR PAGO/ENTREGA DE DINERO -->
-          <div class="flex justify-end">
-            <button onclick="openSharedPaymentModal()" class="px-5 py-3 bg-brandViolet hover:bg-brandVioletDark text-white font-semibold text-sm rounded-xl transition flex items-center gap-2 shadow-lg shadow-brandViolet/20">
-              <i class="fa-solid fa-hand-holding-dollar"></i> Registrar Entrega / Pago
-            </button>
-          </div>
-
-          <!-- HISTORIAL COMPARTIDO CON FECHA Y HORA -->
-          <div class="bg-brandCard border border-brandCardBorder rounded-2xl p-6">
-            <h3 class="text-lg font-bold mb-4 flex items-center gap-2">
-              <i class="fa-solid fa-receipt text-brandViolet text-sm"></i> Historial de Cuentas Compartidas
-            </h3>
-            <div class="overflow-x-auto">
-              <table class="w-full text-left text-sm text-gray-300">
-                <thead class="text-xs uppercase bg-brandDark text-gray-400 border-b border-brandCardBorder">
-                  <tr>
-                    <th class="py-3 px-4">Fecha y Hora</th>
-                    <th class="py-3 px-4">Quien pagó</th>
-                    <th class="py-3 px-4">Para quien</th>
-                    <th class="py-3 px-4">Monto</th>
-                    <th class="py-3 px-4">Nota / Concepto</th>
-                  </tr>
-                </thead>
-                <tbody id="sharedHistoryTable" class="divide-y divide-brandCardBorder">
-                  <tr><td colspan="5" class="py-4 text-center text-gray-500">No hay movimientos registrados.</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-        </div>
-
-      </section>
-
-    </main>
-
-    <!-- FOOTER -->
-    <footer class="w-full border-t border-brandCardBorder py-4 text-center text-xs text-gray-500">
-      <p><span class="text-brandViolet">lole</span><span class="text-gray-300">teo</span> &copy; 2026 - Finanzas sencillas e intuitivas</p>
-    </footer>
-
-  </div>
-
-  <!-- MODALS -->
-
-  <!-- MODAL 1: REGISTRAR MOVIMIENTO PERSONAL -->
-  <div id="modalPersonalMovement" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-    <div class="bg-brandCard border border-brandCardBorder rounded-2xl max-w-md w-full p-6 shadow-2xl relative">
-      <h3 id="modalMovementTitle" class="text-xl font-bold mb-4">Agregar Dinero</h3>
-      
-      <form id="formPersonalMovement" onsubmit="handlePersonalMovement(event)" class="space-y-4">
-        <input type="hidden" id="pmType" value="IN" />
-        
-        <div>
-          <label class="block text-xs text-gray-400 mb-1 font-semibold">Sección / Cuenta</label>
-          <select id="pmCategory" required class="w-full bg-brandDark border border-brandCardBorder rounded-xl p-3 text-sm text-white focus:outline-none focus:border-brandViolet">
-            <!-- Dinámico -->
-          </select>
-        </div>
-
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="block text-xs text-gray-400 mb-1 font-semibold">Monto</label>
-            <input type="number" step="any" min="0.01" id="pmAmount" required placeholder="Ej: 10000" class="w-full bg-brandDark border border-brandCardBorder rounded-xl p-3 text-sm text-white focus:outline-none focus:border-brandViolet" />
-          </div>
-          <div>
-            <label class="block text-xs text-gray-400 mb-1 font-semibold">Moneda</label>
-            <select id="pmCurrency" class="w-full bg-brandDark border border-brandCardBorder rounded-xl p-3 text-sm text-white focus:outline-none focus:border-brandViolet">
-              <option value="ARS">ARS ($)</option>
-              <option value="USD">USD ($)</option>
-              <option value="EUR">EUR (€)</option>
-              <option value="USDT">USDT</option>
-            </select>
-          </div>
-        </div>
-
-        <div>
-          <label class="block text-xs text-gray-400 mb-1 font-semibold">Concepto / Nota (Opcional)</label>
-          <input type="text" id="pmNote" placeholder="Ej: Cobro de sueldo, Regalo..." class="w-full bg-brandDark border border-brandCardBorder rounded-xl p-3 text-sm text-white focus:outline-none focus:border-brandViolet" />
-        </div>
-
-        <div class="flex items-center justify-end gap-3 pt-4 border-t border-brandCardBorder">
-          <button type="button" onclick="closeModal('modalPersonalMovement')" class="px-4 py-2.5 rounded-xl bg-gray-800 hover:bg-gray-700 text-xs font-semibold text-gray-300">Cancelar</button>
-          <button type="submit" class="px-5 py-2.5 rounded-xl bg-brandViolet hover:bg-brandVioletDark text-xs font-semibold text-white shadow-lg">Guardar Movimiento</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- MODAL 2: NUEVA SECCIÓN/CATEGORÍA PERSONAL -->
-  <div id="modalCategory" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-    <div class="bg-brandCard border border-brandCardBorder rounded-2xl max-w-sm w-full p-6 shadow-2xl">
-      <h3 class="text-lg font-bold mb-4">Nueva Sección</h3>
-      <form onsubmit="handleCreateCategory(event)" class="space-y-4">
-        <div>
-          <label class="block text-xs text-gray-400 mb-1 font-semibold">Nombre de la sección</label>
-          <input type="text" id="newCatName" required placeholder="Ej: Efectivo, MercadoPago, Ahorros..." class="w-full bg-brandDark border border-brandCardBorder rounded-xl p-3 text-sm text-white focus:outline-none focus:border-brandViolet" />
-        </div>
-        <div class="flex items-center justify-end gap-3 pt-4 border-t border-brandCardBorder">
-          <button type="button" onclick="closeModal('modalCategory')" class="px-4 py-2.5 rounded-xl bg-gray-800 text-xs font-semibold text-gray-300">Cancelar</button>
-          <button type="submit" class="px-5 py-2.5 rounded-xl bg-brandViolet hover:bg-brandVioletDark text-xs font-semibold text-white">Crear Sección</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- MODAL 3: REGISTRAR PAGO COMPARTIDO + DESCUENTO OPCIONAL DE CARTERA PERSONAL -->
-  <div id="modalSharedPayment" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-    <div class="bg-brandCard border border-brandCardBorder rounded-2xl max-w-md w-full p-6 shadow-2xl">
-      <h3 class="text-xl font-bold mb-4">Registrar Entrega / Pago</h3>
-      
-      <form onsubmit="handleSharedPayment(event)" class="space-y-4">
-        
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="block text-xs text-gray-400 mb-1 font-semibold">Monto</label>
-            <input type="number" step="any" min="0.01" id="spAmount" required placeholder="Ej: 40000" class="w-full bg-brandDark border border-brandCardBorder rounded-xl p-3 text-sm text-white focus:outline-none focus:border-brandViolet" />
-          </div>
-          <div>
-            <label class="block text-xs text-gray-400 mb-1 font-semibold">Moneda</label>
-            <select id="spCurrency" class="w-full bg-brandDark border border-brandCardBorder rounded-xl p-3 text-sm text-white focus:outline-none focus:border-brandViolet">
-              <option value="ARS">ARS ($)</option>
-              <option value="USD">USD ($)</option>
-              <option value="EUR">EUR (€)</option>
-            </select>
-          </div>
-        </div>
-
-        <div>
-          <label class="block text-xs text-gray-400 mb-1 font-semibold">Detalle / Concepto</label>
-          <input type="text" id="spNote" required placeholder="Ej: Te pasé para la cena, Pago parcial..." class="w-full bg-brandDark border border-brandCardBorder rounded-xl p-3 text-sm text-white focus:outline-none focus:border-brandViolet" />
-        </div>
-
-        <!-- INTEGRACIÓN INTELIGENTE CON CARTERA PERSONAL -->
-        <div class="p-4 rounded-xl bg-brandDark border border-brandViolet/30 space-y-3">
-          <label class="flex items-center space-x-3 cursor-pointer">
-            <input type="checkbox" id="spDeductCheck" onchange="toggleDeductCategorySelect()" class="w-4 h-4 text-brandViolet rounded border-gray-700 focus:ring-brandViolet bg-gray-900" />
-            <span class="text-xs font-semibold text-gray-200">¿Descontar este dinero de mi Cartera Personal?</span>
-          </label>
-          
-          <div id="spDeductCategoryContainer" class="hidden pl-7">
-            <label class="block text-xs text-gray-400 mb-1">Elegí la sección a descontar:</label>
-            <select id="spDeductCategory" class="w-full bg-brandCard border border-brandCardBorder rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-brandViolet">
-              <!-- Dinámico -->
-            </select>
-          </div>
-        </div>
-
-        <div class="flex items-center justify-end gap-3 pt-4 border-t border-brandCardBorder">
-          <button type="button" onclick="closeModal('modalSharedPayment')" class="px-4 py-2.5 rounded-xl bg-gray-800 text-xs font-semibold text-gray-300">Cancelar</button>
-          <button type="submit" class="px-5 py-2.5 rounded-xl bg-brandViolet hover:bg-brandVioletDark text-xs font-semibold text-white">Registrar</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- MODAL 4: UNIRSE A CARTERA COMPARTIDA POR CÓDIGO -->
-  <div id="modalJoinShared" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-    <div class="bg-brandCard border border-brandCardBorder rounded-2xl max-w-sm w-full p-6 shadow-2xl">
-      <h3 class="text-lg font-bold mb-4">Unirme a Cartera Compartida</h3>
-      <form onsubmit="handleJoinSharedWallet(event)" class="space-y-4">
-        <div>
-          <label class="block text-xs text-gray-400 mb-1 font-semibold">Código de invitación (6 dígitos)</label>
-          <input type="text" id="joinWalletCode" required placeholder="Ej: AB12CD" uppercase class="w-full bg-brandDark border border-brandCardBorder rounded-xl p-3 text-sm text-white font-mono uppercase tracking-widest focus:outline-none focus:border-brandViolet" />
-        </div>
-        <div class="flex items-center justify-end gap-3 pt-4 border-t border-brandCardBorder">
-          <button type="button" onclick="closeModal('modalJoinShared')" class="px-4 py-2.5 rounded-xl bg-gray-800 text-xs font-semibold text-gray-300">Cancelar</button>
-          <button type="submit" class="px-5 py-2.5 rounded-xl bg-brandViolet hover:bg-brandVioletDark text-xs font-semibold text-white">Vincular</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- MODAL 5: GUÍA DE CONFIGURACIÓN DE FIREBASE -->
-  <div id="modalHelp" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
-    <div class="bg-brandCard border border-brandViolet/40 rounded-2xl max-w-2xl w-full p-6 shadow-2xl my-8">
-      <div class="flex items-center justify-between pb-4 border-b border-brandCardBorder">
-        <h3 class="text-xl font-bold flex items-center gap-2">
-          <i class="fa-solid fa-fire text-brandViolet"></i> Guía de Configuración de Firebase
-        </h3>
-        <button onclick="closeModal('modalHelp')" class="text-gray-400 hover:text-white">
-          <i class="fa-solid fa-xmark text-lg"></i>
-        </button>
-      </div>
-
-      <div class="space-y-5 py-4 text-xs text-gray-300 leading-relaxed">
-        <p>Para asegurar que <strong>loleteo</strong> guarde tus datos sin límites y que la sesión permanezca activa en tu móvil o navegador, verificá estos 3 pasos en tu consola de Firebase:</p>
-
-        <div class="space-y-2 bg-brandDark p-4 rounded-xl border border-brandCardBorder">
-          <h4 class="font-bold text-white text-sm text-brandVioletLight">1. Google Authentication</h4>
-          <p>En la consola de Firebase &rarr; <strong>Authentication</strong> &rarr; <strong>Sign-in method</strong> &rarr; Habilitá el proveedor <strong>Google</strong>.</p>
-        </div>
-
-        <div class="space-y-2 bg-brandDark p-4 rounded-xl border border-brandCardBorder">
-          <h4 class="font-bold text-white text-sm text-brandVioletLight">2. Reglas de Seguridad en Firestore</h4>
-          <p>En la consola de Firebase &rarr; <strong>Firestore Database</strong> &rarr; <strong>Rules</strong> (Reglas), pegá este bloque estricto para asegurar los paths obligatorios:</p>
-          <pre class="bg-black/60 p-3 rounded text-[11px] text-purple-300 overflow-x-auto font-mono">
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /artifacts/{appId}/users/{userId}/{document=**} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
-    }
-    match /artifacts/{appId}/public/data/{document=**} {
-      allow read, write: if request.auth != null;
-    }
-  }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#0b0b0f" />
+<title>loleteo</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config={darkMode:'class',theme:{extend:{colors:{bg:'#0b0b0f',card:'#14141a',line:'#24242e',violet:'#8b5cf6',violetd:'#7c3aed',violetl:'#a78bfa'},fontFamily:{sans:['Inter','sans-serif']}}}}
+</script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style type="text/tailwindcss">
+@layer components{
+ .inp{@apply w-full bg-bg border border-line rounded-lg px-3 py-3 text-base text-white placeholder-gray-600 focus:outline-none focus:border-violet}
+ .btn{@apply px-4 py-3 rounded-lg bg-violet hover:bg-violetd text-white text-sm font-semibold transition active:scale-95}
+ .btn2{@apply px-4 py-3 rounded-lg bg-line hover:bg-gray-700 text-gray-200 text-sm font-medium transition active:scale-95}
+ .lbl{@apply block text-xs text-gray-400 mb-1.5 font-medium}
+ .panel{@apply bg-card border border-line rounded-xl}
+ .modal{@apply hidden fixed inset-0 bg-black/70 z-50 items-end sm:items-center justify-center}
+ .sheet{@apply w-full sm:max-w-md bg-card border border-line rounded-t-2xl sm:rounded-xl p-5 max-h-[92vh] overflow-y-auto}
 }
-          </pre>
-        </div>
+body{background:#0b0b0f;color:#f3f4f6;font-family:Inter,sans-serif;-webkit-tap-highlight-color:transparent}
+.modal.open{display:flex}
+</style>
+</head>
+<body class="min-h-screen flex flex-col">
 
-        <div class="space-y-2 bg-brandDark p-4 rounded-xl border border-brandCardBorder">
-          <h4 class="font-bold text-white text-sm text-brandVioletLight">3. Persistencia de Sesión Automática</h4>
-          <p>Esta aplicación utiliza <code>setPersistence(auth, browserLocalPersistence)</code>, lo que significa que una vez que inicies sesión en tu teléfono o PC, quedarás autenticado permanentemente hasta que toques voluntariamente "Cerrar sesión".</p>
-        </div>
-      </div>
+<header class="border-b border-line bg-bg/90 backdrop-blur sticky top-0 z-40" style="padding-top:env(safe-area-inset-top)">
+ <div class="max-w-3xl mx-auto px-4 h-14 flex items-center justify-between">
+  <button onclick="navigateTo('dashboard')" class="text-2xl font-extrabold tracking-tight"><span class="text-violet">lole</span><span class="text-white">teo</span></button>
+  <div id="userMenu" class="hidden items-center gap-3">
+   <img id="userAvatar" class="w-8 h-8 rounded-full border border-line" src="" alt="" />
+   <button onclick="openModal('modalLogout')" class="text-sm text-gray-400 hover:text-white px-2 py-1">Salir</button>
+  </div>
+ </div>
+</header>
 
-      <div class="pt-4 border-t border-brandCardBorder text-right">
-        <button onclick="closeModal('modalHelp')" class="px-5 py-2.5 bg-brandViolet text-white font-semibold rounded-xl text-xs">Entendido</button>
-      </div>
-    </div>
+<main class="max-w-3xl w-full mx-auto px-4 py-5 flex-1">
+
+ <section id="loadingSection" class="py-24 text-center text-gray-500 text-sm">Cargando…</section>
+
+ <section id="authSection" class="hidden py-16 text-center">
+  <h2 class="text-5xl font-extrabold tracking-tight"><span class="text-violet">lole</span><span class="text-white">teo</span></h2>
+  <p class="text-gray-400 text-sm mt-3 mb-10">Tu plata, y la de a dos, en un solo lugar.</p>
+  <button onclick="loginWithGoogle()" class="w-full max-w-xs mx-auto py-3.5 bg-white text-gray-900 font-semibold rounded-lg flex items-center justify-center gap-3 active:scale-95 transition">
+   <svg class="w-5 h-5" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
+   Iniciar sesión con Google
+  </button>
+ </section>
+
+ <section id="dashboardSection" class="hidden space-y-4">
+  <div class="pb-2">
+   <h2 class="text-2xl font-bold">Hola, <span id="dashUserName" class="text-violetl"></span></h2>
+   <p class="text-sm text-gray-400">¿Qué cartera querés ver?</p>
+  </div>
+  <button onclick="navigateTo('personal')" class="panel w-full text-left p-5 hover:border-violet transition">
+   <div class="flex justify-between items-center mb-1"><span class="font-bold text-lg">Cartera personal</span><span class="text-gray-500">›</span></div>
+   <p id="dashPersonalSummary" class="text-sm text-gray-400">Cargando…</p>
+  </button>
+  <button onclick="navigateTo('shared')" class="panel w-full text-left p-5 hover:border-violet transition">
+   <div class="flex justify-between items-center mb-1"><span class="font-bold text-lg">Cartera compartida</span><span class="text-gray-500">›</span></div>
+   <p id="dashSharedSummary" class="text-sm text-gray-400">Cargando…</p>
+  </button>
+ </section>
+
+ <section id="personalSection" class="hidden space-y-5">
+  <button onclick="navigateTo('dashboard')" class="text-sm text-gray-400 hover:text-white">‹ Volver</button>
+  <div class="panel p-5">
+   <p class="text-xs text-gray-400 uppercase tracking-wider mb-2">Total por moneda</p>
+   <div id="personalTotals" class="space-y-1"></div>
+  </div>
+  <div class="grid grid-cols-2 gap-3">
+   <button onclick="openMovement('IN')" class="btn !bg-emerald-600 hover:!bg-emerald-500">Agregar</button>
+   <button onclick="openMovement('OUT')" class="btn !bg-rose-600 hover:!bg-rose-500">Retirar</button>
+  </div>
+  <div>
+   <div class="flex items-center justify-between mb-3">
+    <h3 class="font-bold">Mis cuentas</h3>
+    <button onclick="openModal('modalCategory')" class="text-sm text-violetl font-medium">+ Nueva cuenta</button>
+   </div>
+   <div id="catGrid" class="space-y-4"></div>
+  </div>
+  <div>
+   <h3 class="font-bold mb-3">Historial</h3>
+   <div id="personalHistory" class="panel divide-y divide-line"></div>
+  </div>
+ </section>
+
+ <section id="sharedSection" class="hidden space-y-5">
+  <button onclick="navigateTo('dashboard')" class="text-sm text-gray-400 hover:text-white">‹ Volver</button>
+
+  <div id="sharedUnlinked" class="hidden panel p-6 text-center space-y-4">
+   <h3 class="text-lg font-bold">Cartera compartida</h3>
+   <p class="text-sm text-gray-400">Creá una y mandale el link a la otra persona, o unite con un código.</p>
+   <button onclick="createSharedWallet()" class="btn w-full">Crear cartera compartida</button>
+   <button onclick="openModal('modalJoin')" class="btn2 w-full">Tengo un código</button>
   </div>
 
+  <div id="sharedLinked" class="hidden space-y-5">
+   <div class="panel p-4 space-y-3">
+    <p class="text-xs text-gray-400">Link para invitar</p>
+    <div class="flex gap-2">
+     <input id="sharedLink" readonly class="inp !py-2 !text-xs" />
+     <button onclick="copyLink()" class="btn2 !py-2 shrink-0">Copiar</button>
+    </div>
+    <p class="text-xs text-gray-500">Código: <span id="sharedCode" class="font-mono text-violetl"></span></p>
+   </div>
+   <div class="panel p-4">
+    <p class="text-xs text-gray-400 uppercase tracking-wider mb-2">Balance</p>
+    <div id="sharedBalance" class="space-y-2"></div>
+   </div>
+   <div id="sharedMembers" class="space-y-2"></div>
+   <button onclick="openSharedPayment()" class="btn w-full">Registrar movimiento</button>
+   <div>
+    <h3 class="font-bold mb-3">Historial compartido</h3>
+    <div id="sharedHistory" class="panel divide-y divide-line"></div>
+   </div>
+  </div>
+ </section>
+</main>
 
-  <!-- FIREBASE MODULE SCRIPTS -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { 
-      getAuth, 
-      signInWithPopup, 
-      GoogleAuthProvider, 
-      onAuthStateChanged, 
-      signOut,
-      setPersistence,
-      browserLocalPersistence
-    } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { 
-      getFirestore, 
-      doc, 
-      getDoc, 
-      setDoc, 
-      updateDoc, 
-      collection, 
-      onSnapshot 
-    } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+<footer class="py-4 text-center text-xs text-gray-600"><span class="text-violet">lole</span><span class="text-gray-400">teo</span></footer>
 
-    // ------------------------------------------------------------------
-    // GLOBALES & CONFIGURACIÓN FIREBASE
-    // ------------------------------------------------------------------
-    
+<!-- Movimiento personal -->
+<div id="modalMovement" class="modal" onclick="if(event.target===this)closeModal('modalMovement')">
+ <form class="sheet space-y-4" onsubmit="handleMovement(event)">
+  <h3 id="movTitle" class="text-lg font-bold">Agregar dinero</h3>
+  <input type="hidden" id="movType" />
+  <div><label class="lbl">Cuenta</label><select id="movCat" required class="inp"></select></div>
+  <div><label class="lbl">Monto</label><input id="movAmount" type="number" inputmode="decimal" step="any" min="0.01" required class="inp" placeholder="10000" /></div>
+  <div><label class="lbl">Nota (opcional)</label><input id="movNote" class="inp" placeholder="Sueldo, regalo…" /></div>
+  <div class="grid grid-cols-2 gap-3 pt-1"><button type="button" onclick="closeModal('modalMovement')" class="btn2">Cancelar</button><button class="btn">Guardar</button></div>
+ </form>
+</div>
+
+<!-- Nueva cuenta -->
+<div id="modalCategory" class="modal" onclick="if(event.target===this)closeModal('modalCategory')">
+ <form class="sheet space-y-4" onsubmit="handleCategory(event)">
+  <h3 class="text-lg font-bold">Nueva cuenta</h3>
+  <div><label class="lbl">Moneda (la escribís vos)</label><input id="catCurrency" required list="currencyList" class="inp" placeholder="Dólares, Pesos, Euros…" autocomplete="off" /><datalist id="currencyList"></datalist></div>
+  <div><label class="lbl">Tipo / nombre (lo escribís vos)</label><input id="catName" required class="inp" placeholder="Efectivo, Mercado Pago, Naranja X…" autocomplete="off" /></div>
+  <div><label class="lbl">Saldo inicial (opcional)</label><input id="catBalance" type="number" inputmode="decimal" step="any" class="inp" placeholder="0" /></div>
+  <div class="grid grid-cols-2 gap-3 pt-1"><button type="button" onclick="closeModal('modalCategory')" class="btn2">Cancelar</button><button class="btn">Crear</button></div>
+ </form>
+</div>
+
+<!-- Movimiento compartido -->
+<div id="modalPayment" class="modal" onclick="if(event.target===this)closeModal('modalPayment')">
+ <form class="sheet space-y-4" onsubmit="handleSharedPayment(event)">
+  <h3 class="text-lg font-bold">Registrar movimiento</h3>
+  <div class="grid grid-cols-2 gap-2">
+   <label class="btn2 text-center cursor-pointer has-[:checked]:!bg-violet"><input type="radio" name="spKind" value="gave" class="hidden" checked />Le pasé plata</label>
+   <label class="btn2 text-center cursor-pointer has-[:checked]:!bg-violet"><input type="radio" name="spKind" value="got" class="hidden" />Me pasó plata</label>
+  </div>
+  <div class="grid grid-cols-2 gap-3">
+   <div><label class="lbl">Monto</label><input id="spAmount" type="number" inputmode="decimal" step="any" min="0.01" required class="inp" /></div>
+   <div><label class="lbl">Moneda</label><input id="spCurrency" required list="currencyList" oninput="fillSpCats()" class="inp" placeholder="Pesos" autocomplete="off" /></div>
+  </div>
+  <div><label class="lbl">¿En qué se pasó? (tu cuenta)</label><select id="spCat" class="inp"></select><p class="text-xs text-gray-500 mt-1">Se descuenta o suma en tu cartera personal.</p></div>
+  <div><label class="lbl">Concepto</label><input id="spNote" required class="inp" placeholder="Para la cena, préstamo…" /></div>
+  <div class="grid grid-cols-2 gap-3 pt-1"><button type="button" onclick="closeModal('modalPayment')" class="btn2">Cancelar</button><button class="btn">Registrar</button></div>
+ </form>
+</div>
+
+<!-- Unirse -->
+<div id="modalJoin" class="modal" onclick="if(event.target===this)closeModal('modalJoin')">
+ <form class="sheet space-y-4" onsubmit="handleJoin(event)">
+  <h3 class="text-lg font-bold">Unirme con código</h3>
+  <input id="joinCode" required class="inp font-mono uppercase tracking-widest" placeholder="AB12CD" autocomplete="off" />
+  <div class="grid grid-cols-2 gap-3"><button type="button" onclick="closeModal('modalJoin')" class="btn2">Cancelar</button><button class="btn">Unirme</button></div>
+ </form>
+</div>
+
+<!-- Confirmar cierre de sesión -->
+<div id="modalLogout" class="modal" onclick="if(event.target===this)closeModal('modalLogout')">
+ <div class="sheet space-y-4">
+  <h3 class="text-lg font-bold">¿Cerrar sesión?</h3>
+  <p class="text-sm text-gray-400">¿Seguro que querés cerrar sesión?</p>
+  <div class="grid grid-cols-2 gap-3"><button onclick="closeModal('modalLogout')" class="btn2">Cancelar</button><button onclick="logoutFirebase()" class="btn !bg-rose-600 hover:!bg-rose-500">Cerrar sesión</button></div>
+ </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc, onSnapshot, arrayUnion } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
 const firebaseConfig = {
   apiKey: "AIzaSyBYf9mjOegr0Ure_n6EWGx8Xsxx0VQfPQo",
   authDomain: "loleteo-finanzas.firebaseapp.com",
@@ -591,692 +195,254 @@ const firebaseConfig = {
   appId: "1:591725380996:web:d8d4ab15e315a1181d49d1"
 };
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
+const appId = 'loleteo'; // ← faltaba definir esto: era la causa de casi todos los fallos
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+setPersistence(auth, browserLocalPersistence).catch(()=>{});
 
-    // Estado local reactivo
-    let currentUser = null;
-    let personalCategories = [];
-    let personalMovements = [];
-    let currentSharedWalletId = null;
-    let sharedWalletData = null;
+let user=null, cats=[], movs=[], wid=null, wallet=null, screen='loading';
+let unsubCat=null, unsubMov=null, unsubWal=null;
+const $ = id => document.getElementById(id);
+const esc = s => String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+const num = n => Number(n).toLocaleString('es-AR');
+const when = t => new Date(t).toLocaleString('es-AR',{dateStyle:'short',timeStyle:'short'});
+const label = c => `${c.currency} · ${c.name}`;
+const same = (a,b) => a.trim().toLowerCase()===b.trim().toLowerCase();
+const catRef = () => doc(db,'artifacts',appId,'users',user.uid,'personal','categories');
+const movRef = () => doc(db,'artifacts',appId,'users',user.uid,'personal','movements');
+const infoRef = () => doc(db,'artifacts',appId,'users',user.uid,'shared','info');
+const walRef = id => doc(db,'artifacts',appId,'public','data','sharedWallets',id);
+const safe = async fn => { try { await fn(); } catch(e){ console.error(e); alert('No se pudo guardar. Revisá la conexión y las reglas de Firestore.\n'+(e.code||e.message)); } };
 
-    // Unsubscribers de Firestore para evitar memory leaks
-    let unsubPersonalCat = null;
-    let unsubPersonalMov = null;
-    let unsubSharedWallet = null;
+Object.assign(window,{loginWithGoogle,logoutFirebase,navigateTo,openModal,closeModal,openMovement,handleMovement,handleCategory,createSharedWallet,handleJoin,openSharedPayment,handleSharedPayment,fillSpCats,copyLink});
 
-    // Configurar la persistencia de autenticación inmediatamente
-    setPersistence(auth, browserLocalPersistence).catch(err => console.log("Persistence setup err", err));
+// Link de invitación (?join=CODIGO)
+const qp = new URLSearchParams(location.search).get('join');
+if (qp) { sessionStorage.setItem('joinCode', qp.toUpperCase()); history.replaceState({}, '', location.pathname); }
 
-    // Exponer funciones globales a la ventana window
-    window.loginWithGoogle = loginWithGoogle;
-    window.logoutFirebase = logoutFirebase;
-    window.navigateTo = navigateTo;
-    window.openHelpModal = openHelpModal;
-    window.closeModal = closeModal;
-    window.openPersonalMovementModal = openPersonalMovementModal;
-    window.handlePersonalMovement = handlePersonalMovement;
-    window.openCategoryModal = openCategoryModal;
-    window.handleCreateCategory = handleCreateCategory;
-    window.createSharedWallet = createSharedWallet;
-    window.showJoinSharedWalletModal = showJoinSharedWalletModal;
-    window.handleJoinSharedWallet = handleJoinSharedWallet;
-    window.openSharedPaymentModal = openSharedPaymentModal;
-    window.handleSharedPayment = handleSharedPayment;
-    window.toggleDeductCategorySelect = toggleDeductCategorySelect;
-    window.copyWalletCode = copyWalletCode;
+function openModal(id){ $(id).classList.add('open'); }
+function closeModal(id){ $(id).classList.remove('open'); }
 
-    // ------------------------------------------------------------------
-    // OBSERVER DE AUTENTICACIÓN
-    // ------------------------------------------------------------------
-    onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        currentUser = user;
-        document.getElementById('userName').textContent = user.displayName || 'Usuario';
-        document.getElementById('dashUserName').textContent = user.displayName || 'Usuario';
-        document.getElementById('userAvatar').src = user.photoURL || 'https://placehold.co/100x100/9D4EDD/FFFFFF?text=U';
-        document.getElementById('userMenu').classList.remove('hidden');
+function navigateTo(s){
+  if(!user && s!=='loading') s='auth';
+  screen=s;
+  ['loading','auth','dashboard','personal','shared'].forEach(n=>$(n+'Section').classList.toggle('hidden',n!==s));
+  window.scrollTo(0,0);
+}
 
-        // Escuchar datos del usuario
-        setupPersonalListeners();
-        checkUserSharedWallet();
+// ---------- Sesión ----------
+onAuthStateChanged(auth, async u=>{
+  if(u){
+    user=u;
+    $('userAvatar').src=u.photoURL||'';
+    $('dashUserName').textContent=(u.displayName||'').split(' ')[0]||'Usuario';
+    $('userMenu').classList.remove('hidden'); $('userMenu').classList.add('flex');
+    listenPersonal();
+    await checkShared();
+    if(screen==='loading'||screen==='auth') navigateTo('dashboard');
+  } else {
+    user=null; cleanup();
+    $('userMenu').classList.add('hidden'); $('userMenu').classList.remove('flex');
+    navigateTo('auth');
+  }
+});
+async function loginWithGoogle(){
+  try{ await signInWithPopup(auth,new GoogleAuthProvider()); }
+  catch(e){ console.error(e); alert('No se pudo iniciar sesión.'); }
+}
+async function logoutFirebase(){
+  closeModal('modalLogout');
+  try{ await signOut(auth); }catch(e){ console.error(e); }
+}
+function cleanup(){
+  [unsubCat,unsubMov,unsubWal].forEach(f=>f&&f());
+  unsubCat=unsubMov=unsubWal=null; cats=[]; movs=[]; wid=null; wallet=null;
+}
 
-        navigateTo('dashboard');
-      } else {
-        currentUser = null;
-        cleanListeners();
-        document.getElementById('userMenu').classList.add('hidden');
-        navigateTo('auth');
-      }
-    });
+// ---------- Cartera personal ----------
+function listenPersonal(){
+  cleanup();
+  unsubCat=onSnapshot(catRef(),s=>{ cats=s.exists()?(s.data().items||[]):[]; renderCats(); syncSections(); },e=>console.error(e));
+  unsubMov=onSnapshot(movRef(),s=>{ movs=s.exists()?(s.data().items||[]):[]; renderMovs(); },e=>console.error(e));
+}
+function totals(){
+  const t={}; cats.forEach(c=>{ t[c.currency]=(t[c.currency]||0)+(c.balance||0); }); return t;
+}
+function renderCats(){
+  const t=totals(), keys=Object.keys(t);
+  $('personalTotals').innerHTML = keys.length
+    ? keys.map(k=>`<div class="flex items-baseline justify-between"><span class="text-gray-400 text-sm">${esc(k)}</span><span class="text-2xl font-extrabold">${num(t[k])}</span></div>`).join('')
+    : '<span class="text-gray-500 text-sm">Todavía no hay cuentas.</span>';
+  $('dashPersonalSummary').textContent = keys.length ? keys.map(k=>`${num(t[k])} ${k}`).join(' · ') : 'Sin cuentas todavía';
+  // agrupadas por moneda
+  const groups={}; cats.forEach(c=>(groups[c.currency]=groups[c.currency]||[]).push(c));
+  $('catGrid').innerHTML = keys.length ? Object.entries(groups).map(([cur,list])=>`
+    <div><p class="text-xs text-violetl font-semibold mb-2">${esc(cur)}</p>
+    <div class="grid grid-cols-2 gap-2">${list.map(c=>`<div class="panel p-3"><p class="text-xs text-gray-400 truncate">${esc(c.name)}</p><p class="font-bold text-lg mt-1">${num(c.balance||0)}</p></div>`).join('')}</div></div>`).join('')
+    : '<p class="text-sm text-gray-500">Creá tu primera cuenta con “+ Nueva cuenta”.</p>';
+  $('movCat').innerHTML = cats.map(c=>`<option value="${c.id}">${esc(label(c))}</option>`).join('');
+  $('currencyList').innerHTML = [...new Set(cats.map(c=>c.currency))].map(c=>`<option value="${esc(c)}">`).join('');
+  fillSpCats();
+}
+function renderMovs(){
+  const list=[...movs].sort((a,b)=>new Date(b.timestamp)-new Date(a.timestamp));
+  $('personalHistory').innerHTML = list.length ? list.map(m=>{
+    const inc=m.type==='IN';
+    return `<div class="p-3 flex items-center justify-between gap-3">
+      <div class="min-w-0"><p class="text-sm font-medium truncate">${esc(m.label||'Cuenta')}</p>
+      <p class="text-xs text-gray-500 truncate">${when(m.timestamp)}${m.note?' · '+esc(m.note):''}</p></div>
+      <span class="font-bold text-sm shrink-0 ${inc?'text-emerald-400':'text-rose-400'}">${inc?'+':'−'}${num(m.amount)}</span></div>`;
+  }).join('') : '<p class="p-4 text-sm text-gray-500 text-center">Sin movimientos todavía.</p>';
+}
+function openMovement(type){
+  if(!cats.length){ alert('Primero creá una cuenta.'); return; }
+  $('movType').value=type; $('movTitle').textContent=type==='IN'?'Agregar dinero':'Retirar dinero'; openModal('modalMovement');
+}
+function applyToCats(catId,type,amount){
+  return cats.map(c=>c.id===catId?{...c,balance:(c.balance||0)+(type==='IN'?amount:-amount)}:c);
+}
+function handleMovement(e){
+  e.preventDefault();
+  const type=$('movType').value, id=$('movCat').value, amount=parseFloat($('movAmount').value);
+  const c=cats.find(x=>x.id===id); if(!c||!(amount>0)) return;
+  return safe(async()=>{
+    const m={id:'mov_'+Date.now(),type,categoryId:id,label:label(c),amount,note:$('movNote').value.trim(),timestamp:new Date().toISOString()};
+    await setDoc(catRef(),{items:applyToCats(id,type,amount)});
+    await setDoc(movRef(),{items:[m,...movs]});
+    closeModal('modalMovement'); e.target.reset();
+  });
+}
+function handleCategory(e){
+  e.preventDefault();
+  const currency=$('catCurrency').value.trim(), name=$('catName').value.trim();
+  if(!currency||!name) return;
+  const existing=cats.find(c=>same(c.currency,currency)); // unifica mayúsculas de la moneda
+  const cur=existing?existing.currency:currency;
+  if(cats.some(c=>same(c.currency,cur)&&same(c.name,name))){ alert('Ya tenés esa cuenta.'); return; }
+  return safe(async()=>{
+    const c={id:'cat_'+Date.now(),currency:cur,name,balance:parseFloat($('catBalance').value)||0};
+    await setDoc(catRef(),{items:[...cats,c]});
+    closeModal('modalCategory'); e.target.reset();
+  });
+}
 
-    // ------------------------------------------------------------------
-    // NAVEGACIÓN ENTRE SECCIONES
-    // ------------------------------------------------------------------
-    function navigateTo(screen) {
-      document.getElementById('authSection').classList.add('hidden');
-      document.getElementById('dashboardSection').classList.add('hidden');
-      document.getElementById('personalSection').classList.add('hidden');
-      document.getElementById('sharedSection').classList.add('hidden');
-
-      if (!currentUser && screen !== 'auth') {
-        document.getElementById('authSection').classList.remove('hidden');
-        return;
-      }
-
-      switch (screen) {
-        case 'auth':
-          document.getElementById('authSection').classList.remove('hidden');
-          break;
-        case 'dashboard':
-          document.getElementById('dashboardSection').classList.remove('hidden');
-          break;
-        case 'personal':
-          document.getElementById('personalSection').classList.remove('hidden');
-          break;
-        case 'shared':
-          document.getElementById('sharedSection').classList.remove('hidden');
-          break;
-      }
+// ---------- Cartera compartida ----------
+async function checkShared(){
+  try{
+    const s=await getDoc(infoRef());
+    let code=sessionStorage.getItem('joinCode');
+    if(code && !(s.exists()&&s.data().walletId)){ sessionStorage.removeItem('joinCode'); await joinWallet(code); return; }
+    sessionStorage.removeItem('joinCode');
+    if(s.exists()&&s.data().walletId){ wid=s.data().walletId; listenWallet(wid); return; }
+  }catch(e){ console.error(e); }
+  showUnlinked();
+}
+function showUnlinked(){
+  $('sharedUnlinked').classList.remove('hidden'); $('sharedLinked').classList.add('hidden');
+  $('dashSharedSummary').textContent='Sin vincular · tocá para crear o unirte';
+}
+function listenWallet(id){
+  unsubWal&&unsubWal();
+  unsubWal=onSnapshot(walRef(id),s=>{
+    if(!s.exists()){ wallet=null; showUnlinked(); return; }
+    wallet=s.data();
+    $('sharedUnlinked').classList.add('hidden'); $('sharedLinked').classList.remove('hidden');
+    renderShared(); syncSections();
+  },e=>console.error(e));
+}
+function createSharedWallet(){
+  return safe(async()=>{
+    const code=Array.from({length:6},()=>'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[Math.floor(Math.random()*32)]).join('');
+    await setDoc(walRef(code),{code,createdAt:new Date().toISOString(),members:{[user.uid]:{name:user.displayName||'Usuario',sections:cats.map(label)}},history:[]});
+    await setDoc(infoRef(),{walletId:code});
+    wid=code; listenWallet(code);
+  });
+}
+async function joinWallet(code){
+  code=code.trim().toUpperCase();
+  await safe(async()=>{
+    const s=await getDoc(walRef(code));
+    if(!s.exists()){ alert('Código no encontrado.'); showUnlinked(); return; }
+    const members=s.data().members||{};
+    if(!members[user.uid]&&Object.keys(members).length>=2){ alert('Esa cartera ya tiene dos integrantes.'); showUnlinked(); return; }
+    await updateDoc(walRef(code),{[`members.${user.uid}`]:{name:user.displayName||'Usuario',sections:cats.map(label)}});
+    await setDoc(infoRef(),{walletId:code});
+    wid=code; listenWallet(code); navigateTo('shared');
+  });
+}
+function handleJoin(e){ e.preventDefault(); closeModal('modalJoin'); return joinWallet($('joinCode').value); }
+// Publica en la cartera compartida los NOMBRES de tus cuentas (sin saldos)
+function syncSections(){
+  if(!wallet||!wid||!user||!wallet.members?.[user.uid]) return;
+  const mine=cats.map(label), cur=wallet.members[user.uid].sections||[];
+  if(JSON.stringify(mine)!==JSON.stringify(cur)) updateDoc(walRef(wid),{[`members.${user.uid}.sections`]:mine}).catch(console.error);
+}
+function renderShared(){
+  const link=location.origin+location.pathname+'?join='+wallet.code;
+  $('sharedLink').value=link; $('sharedCode').textContent=wallet.code;
+  const history=wallet.history||[];
+  const net={};
+  history.forEach(h=>{
+    const d=h.kind==='gave'?h.amount:-h.amount;
+    net[h.currency]=(net[h.currency]||0)+(h.byUid===user.uid?d:-d);
+  });
+  const keys=Object.keys(net), parts=[];
+  const members=Object.entries(wallet.members||{});
+  const other=members.find(([u])=>u!==user.uid);
+  const oName=other?other[1].name:'La otra persona';
+  $('sharedBalance').innerHTML = keys.length ? keys.map(k=>{
+    const v=net[k]; let txt,cls;
+    if(v>0){txt=`${esc(oName)} te debe ${num(v)}`;cls='text-emerald-400';parts.push(`Te deben ${num(v)} ${k}`);}
+    else if(v<0){txt=`Le debés ${num(-v)} a ${esc(oName)}`;cls='text-rose-400';parts.push(`Debés ${num(-v)} ${k}`);}
+    else{txt='Están a mano';cls='text-gray-400';}
+    return `<div class="flex items-center justify-between bg-bg border border-line rounded-lg p-3"><span class="text-xs text-gray-400">${esc(k)}</span><span class="font-bold text-sm text-right ${cls}">${txt}</span></div>`;
+  }).join('') : '<p class="text-sm text-gray-500">Están a mano. Todavía no hay movimientos.</p>';
+  $('dashSharedSummary').textContent = parts.length?parts.join(' · '):(other?'Están a mano':'Esperando a la otra persona');
+  $('sharedMembers').innerHTML = members.map(([u,m])=>`<div class="panel p-3"><p class="text-sm font-semibold">${esc(m.name)}${u===user.uid?' <span class="text-xs text-gray-500">(vos)</span>':''}</p>
+    <div class="flex flex-wrap gap-1.5 mt-2">${(m.sections||[]).length?m.sections.map(s=>`<span class="text-xs bg-line text-gray-300 rounded px-2 py-1">${esc(s)}</span>`).join(''):'<span class="text-xs text-gray-500">Sin cuentas cargadas</span>'}</div></div>`).join('')
+    + (members.length<2?'<p class="text-xs text-gray-500 px-1">Esperando que la otra persona se una con el link.</p>':'');
+  const list=[...history].sort((a,b)=>new Date(b.timestamp)-new Date(a.timestamp));
+  $('sharedHistory').innerHTML = list.length ? list.map(h=>{
+    const mine=h.byUid===user.uid;
+    const txt = h.kind==='gave' ? `${esc(h.byName)} le pasó a ${esc(h.otherName)}` : `${esc(h.otherName)} le pasó a ${esc(h.byName)}`;
+    return `<div class="p-3"><div class="flex justify-between gap-3"><p class="text-sm font-medium">${txt}</p><span class="font-bold text-sm shrink-0">${num(h.amount)} <span class="text-xs text-violetl font-normal">${esc(h.currency)}</span></span></div>
+    <p class="text-xs text-gray-500 mt-1">${when(h.timestamp)} · ${esc(h.note)}${h.method?' · '+esc(h.method):''}</p></div>`;
+  }).join('') : '<p class="p-4 text-sm text-gray-500 text-center">Sin movimientos todavía.</p>';
+}
+function copyLink(){
+  const v=$('sharedLink').value;
+  (navigator.clipboard?navigator.clipboard.writeText(v):Promise.reject()).catch(()=>{$('sharedLink').select();document.execCommand('copy');}).finally(()=>alert('Link copiado'));
+}
+function openSharedPayment(){ fillSpCats(); openModal('modalPayment'); }
+function fillSpCats(){
+  const cur=$('spCurrency').value||'';
+  const opts=cats.filter(c=>!cur||same(c.currency,cur));
+  $('spCat').innerHTML='<option value="">No tocar mi cartera personal</option>'+opts.map(c=>`<option value="${c.id}">${esc(label(c))}</option>`).join('');
+  if(opts.length&&cur) $('spCat').value=opts[0].id;
+}
+function handleSharedPayment(e){
+  e.preventDefault();
+  if(!wallet||!wid) return;
+  const kind=document.querySelector('input[name=spKind]:checked').value;
+  const amount=parseFloat($('spAmount').value), note=$('spNote').value.trim();
+  let currency=$('spCurrency').value.trim();
+  const catId=$('spCat').value, c=cats.find(x=>x.id===catId);
+  if(!(amount>0)||!currency||!note) return;
+  const known=cats.find(x=>same(x.currency,currency)); if(known) currency=known.currency;
+  const other=Object.entries(wallet.members||{}).find(([u])=>u!==user.uid);
+  const item={id:'pay_'+Date.now(),kind,byUid:user.uid,byName:user.displayName||'Yo',otherUid:other?other[0]:null,otherName:other?other[1].name:'la otra persona',amount,currency,note,method:c?label(c):'',timestamp:new Date().toISOString()};
+  return safe(async()=>{
+    await updateDoc(walRef(wid),{history:arrayUnion(item)});
+    if(c){ // le pasé → resta de mi cuenta · me pasó → suma a mi cuenta
+      const type=kind==='gave'?'OUT':'IN';
+      const m={id:'mov_'+Date.now(),type,categoryId:c.id,label:label(c),amount,note:(kind==='gave'?'Pasé a ':'Recibí de ')+item.otherName+': '+note,timestamp:item.timestamp};
+      await setDoc(catRef(),{items:applyToCats(c.id,type,amount)});
+      await setDoc(movRef(),{items:[m,...movs]});
     }
-
-    // ------------------------------------------------------------------
-    // AUTH HANDLERS
-    // ------------------------------------------------------------------
-    async function loginWithGoogle() {
-      try {
-        const provider = new GoogleAuthProvider();
-        await signInWithPopup(auth, provider);
-      } catch (error) {
-        console.error("Error al iniciar sesión con Google:", error);
-        alert("No se pudo completar el inicio de sesión. Revisa la configuración de Firebase.");
-      }
-    }
-
-    async function logoutFirebase() {
-      try {
-        await signOut(auth);
-      } catch (error) {
-        console.error("Error al cerrar sesión:", error);
-      }
-    }
-
-    // ------------------------------------------------------------------
-    // CARTERA PERSONAL (LISTENERS & LOGIC)
-    // ------------------------------------------------------------------
-    function setupPersonalListeners() {
-      if (!currentUser) return;
-      cleanListeners();
-
-      // Path Estricto Regla 1: /artifacts/{appId}/users/{userId}/data
-      const categoriesDocRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'personal', 'categories');
-      const movementsDocRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'personal', 'movements');
-
-      // Escuchar Categorías
-      unsubPersonalCat = onSnapshot(categoriesDocRef, (snap) => {
-        if (snap.exists()) {
-          personalCategories = snap.data().items || [];
-        } else {
-          // Categorías por defecto iniciales
-          personalCategories = [
-            { id: 'cat_1', name: 'Efectivo', balances: { ARS: 0, USD: 0 } },
-            { id: 'cat_2', name: 'Transferencia / Banco', balances: { ARS: 0, USD: 0 } }
-          ];
-          setDoc(categoriesDocRef, { items: personalCategories });
-        }
-        renderPersonalCategories();
-        renderPersonalTotals();
-      }, (err) => console.log("Cat error", err));
-
-      // Escuchar Movimientos
-      unsubPersonalMov = onSnapshot(movementsDocRef, (snap) => {
-        if (snap.exists()) {
-          personalMovements = snap.data().items || [];
-        } else {
-          personalMovements = [];
-          setDoc(movementsDocRef, { items: [] });
-        }
-        renderPersonalHistory();
-      }, (err) => console.log("Mov error", err));
-    }
-
-    function cleanListeners() {
-      if (unsubPersonalCat) unsubPersonalCat();
-      if (unsubPersonalMov) unsubPersonalMov();
-      if (unsubSharedWallet) unsubSharedWallet();
-    }
-
-    function renderPersonalCategories() {
-      const grid = document.getElementById('personalCategoriesGrid');
-      const pmCategorySelect = document.getElementById('pmCategory');
-      const spDeductCategorySelect = document.getElementById('spDeductCategory');
-      
-      grid.innerHTML = '';
-      pmCategorySelect.innerHTML = '';
-      spDeductCategorySelect.innerHTML = '';
-
-      if (personalCategories.length === 0) {
-        grid.innerHTML = `<div class="col-span-full text-center text-gray-500 py-4">No tenés secciones aún. ¡Creá la primera!</div>`;
-        return;
-      }
-
-      personalCategories.forEach((cat) => {
-        // Select Options
-        const opt1 = document.createElement('option');
-        opt1.value = cat.id;
-        opt1.textContent = cat.name;
-        pmCategorySelect.appendChild(opt1);
-
-        const opt2 = document.createElement('option');
-        opt2.value = cat.id;
-        opt2.textContent = cat.name;
-        spDeductCategorySelect.appendChild(opt2);
-
-        // Grid Cards
-        let balancesHTML = '';
-        const currencies = Object.keys(cat.balances || {});
-        if (currencies.length === 0) {
-          balancesHTML = '<span class="text-gray-500 text-xs">Sin saldo</span>';
-        } else {
-          balancesHTML = currencies
-            .map(c => `<span class="block font-bold text-sm text-gray-200">${cat.balances[c].toLocaleString()} <span class="text-xs text-brandVioletLight font-normal">${c}</span></span>`)
-            .join('');
-        }
-
-        const card = document.createElement('div');
-        card.className = "p-4 rounded-xl bg-brandCard border border-brandCardBorder hover:border-brandViolet/40 transition flex flex-col justify-between";
-        card.innerHTML = `
-          <div>
-            <div class="flex items-center justify-between mb-2">
-              <span class="text-sm font-bold text-white">${escapeHtml(cat.name)}</span>
-              <i class="fa-solid fa-wallet text-xs text-gray-500"></i>
-            </div>
-            <div class="space-y-1 my-2">
-              ${balancesHTML}
-            </div>
-          </div>
-        `;
-        grid.appendChild(card);
-      });
-    }
-
-    function renderPersonalTotals() {
-      const container = document.getElementById('personalTotalsContainer');
-      const dashSummary = document.getElementById('dashPersonalSummary');
-      
-      const totals = {};
-      personalCategories.forEach(cat => {
-        if (cat.balances) {
-          Object.entries(cat.balances).forEach(([curr, amount]) => {
-            totals[curr] = (totals[curr] || 0) + (amount || 0);
-          });
-        }
-      });
-
-      const keys = Object.keys(totals);
-      if (keys.length === 0) {
-        container.innerHTML = `<span class="text-lg font-bold text-gray-400">0 ARS</span>`;
-        if (dashSummary) dashSummary.textContent = "0 ARS registrado";
-        return;
-      }
-
-      const formattedParts = keys.map(k => `${totals[k].toLocaleString()} <span class="text-sm text-brandVioletLight font-normal mr-2">${k}</span>`);
-      container.innerHTML = `<div class="text-2xl sm:text-3xl font-extrabold text-white">${formattedParts.join('<span class="text-gray-600 mx-2">|</span>')}</div>`;
-
-      if (dashSummary) {
-        dashSummary.textContent = keys.map(k => `${totals[k].toLocaleString()} ${k}`).join(' | ');
-      }
-    }
-
-    function renderPersonalHistory() {
-      const tbody = document.getElementById('personalHistoryTable');
-      tbody.innerHTML = '';
-
-      if (personalMovements.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" class="py-4 text-center text-gray-500">Sin movimientos registrados.</td></tr>`;
-        return;
-      }
-
-      // Ordenar por fecha descendente
-      const sorted = [...personalMovements].sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
-
-      sorted.forEach(m => {
-        const cat = personalCategories.find(c => c.id === m.categoryId);
-        const catName = cat ? cat.name : 'Sección';
-        const isIncome = m.type === 'IN';
-        const dateObj = new Date(m.timestamp);
-        const formattedDate = dateObj.toLocaleDateString() + ' ' + dateObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-
-        const tr = document.createElement('tr');
-        tr.className = "hover:bg-brandDark/50 transition";
-        tr.innerHTML = `
-          <td class="py-3 px-4 text-xs text-gray-400 whitespace-nowrap">${formattedDate}</td>
-          <td class="py-3 px-4">
-            <span class="px-2 py-0.5 rounded text-[10px] font-bold ${isIncome ? 'bg-emerald-950 text-emerald-400 border border-emerald-800' : 'bg-rose-950 text-rose-400 border border-rose-800'}">
-              ${isIncome ? 'INGRESO' : 'EGRESO'}
-            </span>
-          </td>
-          <td class="py-3 px-4 text-xs font-semibold text-gray-300">${escapeHtml(catName)}</td>
-          <td class="py-3 px-4 font-bold text-xs ${isIncome ? 'text-emerald-400' : 'text-rose-400'}">
-            ${isIncome ? '+' : '-'}${m.amount.toLocaleString()} ${m.currency}
-          </td>
-          <td class="py-3 px-4 text-xs text-gray-400">${escapeHtml(m.note || '-')}</td>
-        `;
-        tbody.appendChild(tr);
-      });
-    }
-
-    async function handlePersonalMovement(e) {
-      e.preventDefault();
-      if (!currentUser) return;
-
-      const type = document.getElementById('pmType').value;
-      const categoryId = document.getElementById('pmCategory').value;
-      const amount = parseFloat(document.getElementById('pmAmount').value);
-      const currency = document.getElementById('pmCurrency').value;
-      const note = document.getElementById('pmNote').value;
-
-      if (!categoryId || isNaN(amount) || amount <= 0) return;
-
-      // Actualizar balances
-      const updatedCategories = personalCategories.map(cat => {
-        if (cat.id === categoryId) {
-          const currentBal = (cat.balances && cat.balances[currency]) ? cat.balances[currency] : 0;
-          const newBal = type === 'IN' ? currentBal + amount : currentBal - amount;
-          return {
-            ...cat,
-            balances: {
-              ...(cat.balances || {}),
-              [currency]: newBal
-            }
-          };
-        }
-        return cat;
-      });
-
-      // Crear registro historial
-      const newMovement = {
-        id: 'mov_' + Date.now(),
-        type,
-        categoryId,
-        amount,
-        currency,
-        note,
-        timestamp: new Date().toISOString()
-      };
-      const updatedMovements = [newMovement, ...personalMovements];
-
-      // Guardar en Firestore
-      const categoriesDocRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'personal', 'categories');
-      const movementsDocRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'personal', 'movements');
-
-      await setDoc(categoriesDocRef, { items: updatedCategories });
-      await setDoc(movementsDocRef, { items: updatedMovements });
-
-      closeModal('modalPersonalMovement');
-      document.getElementById('formPersonalMovement').reset();
-    }
-
-    async function handleCreateCategory(e) {
-      e.preventDefault();
-      if (!currentUser) return;
-
-      const name = document.getElementById('newCatName').value.trim();
-      if (!name) return;
-
-      const newCategory = {
-        id: 'cat_' + Date.now(),
-        name,
-        balances: { ARS: 0, USD: 0 }
-      };
-
-      const updatedCategories = [...personalCategories, newCategory];
-      const categoriesDocRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'personal', 'categories');
-      
-      await setDoc(categoriesDocRef, { items: updatedCategories });
-      closeModal('modalCategory');
-      document.getElementById('newCatName').value = '';
-    }
-
-    // ------------------------------------------------------------------
-    // CARTERA COMPARTIDA (LISTENERS & LOGIC)
-    // ------------------------------------------------------------------
-    async function checkUserSharedWallet() {
-      if (!currentUser) return;
-
-      // Buscar si el usuario tiene una vinculación de cartera compartida
-      const userSharedRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'shared', 'info');
-      const userSharedSnap = await getDoc(userSharedRef);
-
-      if (userSharedSnap.exists() && userSharedSnap.data().walletId) {
-        currentSharedWalletId = userSharedSnap.data().walletId;
-        listenToSharedWallet(currentSharedWalletId);
-      } else {
-        document.getElementById('sharedUnlinkedView').classList.remove('hidden');
-        document.getElementById('sharedLinkedView').classList.add('hidden');
-        document.getElementById('dashSharedBadge').textContent = 'No vinculada';
-        document.getElementById('dashSharedSummary').textContent = 'Toca para vincular cartera';
-      }
-    }
-
-    function listenToSharedWallet(walletId) {
-      if (unsubSharedWallet) unsubSharedWallet();
-
-      // Path público estricto Regla 1: /artifacts/{appId}/public/data/sharedWallets/{walletId}
-      const walletRef = doc(db, 'artifacts', appId, 'public', 'data', 'sharedWallets', walletId);
-
-      unsubSharedWallet = onSnapshot(walletRef, (snap) => {
-        if (snap.exists()) {
-          sharedWalletData = snap.data();
-          document.getElementById('sharedUnlinkedView').classList.add('hidden');
-          document.getElementById('sharedLinkedView').classList.remove('hidden');
-          renderSharedWalletInfo();
-        } else {
-          // Si fue borrada o no existe
-          document.getElementById('sharedUnlinkedView').classList.remove('hidden');
-          document.getElementById('sharedLinkedView').classList.add('hidden');
-        }
-      }, (err) => console.log("Shared wallet err", err));
-    }
-
-    function renderSharedWalletInfo() {
-      if (!sharedWalletData || !currentUser) return;
-
-      document.getElementById('sharedWalletCode').textContent = sharedWalletData.code || '------';
-
-      // Nombres de los integrantes
-      const members = sharedWalletData.members || {};
-      const memberNames = Object.values(members).map(m => m.name);
-      document.getElementById('sharedMembers').textContent = memberNames.join(' y ');
-
-      // Calcular balances netos por moneda
-      // Historial de pagos entre miembros
-      const history = sharedWalletData.history || [];
-      const netBalances = {}; // { ARS: delta, USD: delta } -> positivo = me deben, negativo = debo
-
-      history.forEach(item => {
-        const curr = item.currency || 'ARS';
-        if (!netBalances[curr]) netBalances[curr] = 0;
-
-        if (item.fromUid === currentUser.uid) {
-          // Yo entregué dinero -> Incrementa mi saldo a favor (me deben)
-          netBalances[curr] += item.amount;
-        } else {
-          // La pareja me entregó dinero -> Resta mi saldo a favor (o incrementa lo que debo)
-          netBalances[curr] -= item.amount;
-        }
-      });
-
-      // Render Display de Balances Netos
-      const balanceContainer = document.getElementById('sharedBalanceDisplay');
-      const dashSharedSummary = document.getElementById('dashSharedSummary');
-      balanceContainer.innerHTML = '';
-
-      const currencies = Object.keys(netBalances);
-      
-      if (currencies.length === 0) {
-        balanceContainer.innerHTML = `<span class="text-lg font-bold text-gray-400">Están a mano (0 ARS)</span>`;
-        if (dashSharedSummary) dashSharedSummary.textContent = "Están al día / Sin deudas";
-      } else {
-        const summaryParts = [];
-        currencies.forEach(c => {
-          const bal = netBalances[c];
-          let statusText = '';
-          let colorClass = '';
-
-          if (bal > 0) {
-            statusText = `Te debe ${bal.toLocaleString()} ${c}`;
-            colorClass = 'text-emerald-400';
-            summaryParts.push(`Te debe ${bal.toLocaleString()} ${c}`);
-          } else if (bal < 0) {
-            statusText = `Le debés ${Math.abs(bal).toLocaleString()} ${c}`;
-            colorClass = 'text-rose-400';
-            summaryParts.push(`Debés ${Math.abs(bal).toLocaleString()} ${c}`);
-          } else {
-            statusText = `Al día (0 ${c})`;
-            colorClass = 'text-gray-400';
-            summaryParts.push(`0 ${c}`);
-          }
-
-          const div = document.createElement('div');
-          div.className = "flex items-center justify-between bg-brandDark p-3 rounded-xl border border-brandCardBorder";
-          div.innerHTML = `
-            <span class="text-xs font-semibold text-gray-400">Moneda: ${c}</span>
-            <span class="text-base sm:text-lg font-extrabold ${colorClass}">${statusText}</span>
-          `;
-          balanceContainer.appendChild(div);
-        });
-
-        if (dashSharedSummary) dashSharedSummary.textContent = summaryParts.join(' | ');
-      }
-
-      // Render Historial Compartido
-      const tbody = document.getElementById('sharedHistoryTable');
-      tbody.innerHTML = '';
-
-      if (history.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" class="py-4 text-center text-gray-500">No hay movimientos registrados.</td></tr>`;
-        return;
-      }
-
-      const sortedHistory = [...history].sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
-      sortedHistory.forEach(item => {
-        const dateObj = new Date(item.timestamp);
-        const formattedDate = dateObj.toLocaleDateString() + ' ' + dateObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-        
-        const isMine = item.fromUid === currentUser.uid;
-
-        const tr = document.createElement('tr');
-        tr.className = "hover:bg-brandDark/50 transition";
-        tr.innerHTML = `
-          <td class="py-3 px-4 text-xs text-gray-400 whitespace-nowrap">${formattedDate}</td>
-          <td class="py-3 px-4 font-semibold text-xs ${isMine ? 'text-brandVioletLight' : 'text-gray-300'}">${escapeHtml(item.fromName)}</td>
-          <td class="py-3 px-4 font-semibold text-xs text-gray-400">${escapeHtml(item.toName)}</td>
-          <td class="py-3 px-4 font-bold text-xs text-white">
-            ${item.amount.toLocaleString()} ${item.currency}
-          </td>
-          <td class="py-3 px-4 text-xs text-gray-400">${escapeHtml(item.note || '-')}</td>
-        `;
-        tbody.appendChild(tr);
-      });
-    }
-
-    async function createSharedWallet() {
-      if (!currentUser) return;
-
-      const randomCode = Math.random().toString(36).substring(2, 8).toUpperCase();
-      const walletId = 'wallet_' + Date.now();
-
-      const newWallet = {
-        id: walletId,
-        code: randomCode,
-        createdAt: new Date().toISOString(),
-        members: {
-          [currentUser.uid]: { name: currentUser.displayName || 'Usuario 1', photo: currentUser.photoURL }
-        },
-        history: []
-      };
-
-      // Guardar wallet pública
-      const walletRef = doc(db, 'artifacts', appId, 'public', 'data', 'sharedWallets', walletId);
-      await setDoc(walletRef, newWallet);
-
-      // Vincular usuario
-      const userSharedRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'shared', 'info');
-      await setDoc(userSharedRef, { walletId });
-
-      currentSharedWalletId = walletId;
-      listenToSharedWallet(walletId);
-    }
-
-    function showJoinSharedWalletModal() {
-      document.getElementById('modalJoinShared').classList.remove('hidden');
-    }
-
-    async function handleJoinSharedWallet(e) {
-      e.preventDefault();
-      if (!currentUser) return;
-
-      const codeInput = document.getElementById('joinWalletCode').value.trim().toUpperCase();
-      if (!codeInput) return;
-
-      // Buscar wallet por código mediante query simple o scan directo de la lista
-      // Para evitar indices compuestos según Regla 2, traemos directo o escaneamos
-      try {
-        const walletRef = doc(db, 'artifacts', appId, 'public', 'data', 'sharedWallets', 'wallet_' + codeInput);
-        // Intentar directo o por búsqueda simple
-        // Para asegurar robustez, permitimos que el código sea directamente el ID corto o buscamos
-        alert("Integrando a cartera mediante el código " + codeInput + "...");
-        
-        // Simulación de búsqueda exitosa o vinculación
-        // En un caso real guardamos la referencia en el doc de la app
-        const userSharedRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'shared', 'info');
-        await setDoc(userSharedRef, { walletId: codeInput });
-
-        closeModal('modalJoinShared');
-        currentSharedWalletId = codeInput;
-        listenToSharedWallet(codeInput);
-      } catch (err) {
-        alert("Código no encontrado o error al conectar.");
-      }
-    }
-
-    async function handleSharedPayment(e) {
-      e.preventDefault();
-      if (!currentUser || !currentSharedWalletId || !sharedWalletData) return;
-
-      const amount = parseFloat(document.getElementById('spAmount').value);
-      const currency = document.getElementById('spCurrency').value;
-      const note = document.getElementById('spNote').value;
-      const deductCheck = document.getElementById('spDeductCheck').checked;
-      const deductCategory = document.getElementById('spDeductCategory').value;
-
-      if (isNaN(amount) || amount <= 0 || !note) return;
-
-      // Determinar miembro pareja destinatario
-      const members = sharedWalletData.members || {};
-      const partnerUid = Object.keys(members).find(uid => uid !== currentUser.uid) || 'pareja_id';
-      const partnerName = members[partnerUid] ? members[partnerUid].name : 'Pareja';
-
-      // 1. Agregar al historial compartido
-      const newPayment = {
-        id: 'pay_' + Date.now(),
-        fromUid: currentUser.uid,
-        fromName: currentUser.displayName || 'Yo',
-        toUid: partnerUid,
-        toName: partnerName,
-        amount,
-        currency,
-        note,
-        timestamp: new Date().toISOString()
-      };
-
-      const updatedHistory = [newPayment, ...(sharedWalletData.history || [])];
-
-      const walletRef = doc(db, 'artifacts', appId, 'public', 'data', 'sharedWallets', currentSharedWalletId);
-      await updateDoc(walletRef, { history: updatedHistory });
-
-      // 2. Si marcó descontar de Cartera Personal Inteligente
-      if (deductCheck && deductCategory) {
-        const updatedCategories = personalCategories.map(cat => {
-          if (cat.id === deductCategory) {
-            const currentBal = (cat.balances && cat.balances[currency]) ? cat.balances[currency] : 0;
-            return {
-              ...cat,
-              balances: {
-                ...(cat.balances || {}),
-                [currency]: currentBal - amount
-              }
-            };
-          }
-          return cat;
-        });
-
-        const newPersonalMov = {
-          id: 'mov_' + Date.now(),
-          type: 'OUT',
-          categoryId: deductCategory,
-          amount,
-          currency,
-          note: `Pago compartido a ${partnerName}: ${note}`,
-          timestamp: new Date().toISOString()
-        };
-
-        const categoriesDocRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'personal', 'categories');
-        const movementsDocRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'personal', 'movements');
-
-        await setDoc(categoriesDocRef, { items: updatedCategories });
-        await setDoc(movementsDocRef, { items: [newPersonalMov, ...personalMovements] });
-      }
-
-      closeModal('modalSharedPayment');
-      document.getElementById('spAmount').value = '';
-      document.getElementById('spNote').value = '';
-      document.getElementById('spDeductCheck').checked = false;
-      toggleDeductCategorySelect();
-    }
-
-    // ------------------------------------------------------------------
-    // HELPER UI FUNCTIONS
-    // ------------------------------------------------------------------
-    function openPersonalMovementModal(type) {
-      document.getElementById('pmType').value = type;
-      document.getElementById('modalMovementTitle').textContent = type === 'IN' ? 'Agregar Dinero' : 'Retirar Dinero';
-      document.getElementById('modalPersonalMovement').classList.remove('hidden');
-    }
-
-    function openCategoryModal() {
-      document.getElementById('modalCategory').classList.remove('hidden');
-    }
-
-    function openSharedPaymentModal() {
-      document.getElementById('modalSharedPayment').classList.remove('hidden');
-    }
-
-    function openHelpModal() {
-      document.getElementById('modalHelp').classList.remove('hidden');
-    }
-
-    function closeModal(id) {
-      document.getElementById(id).classList.add('hidden');
-    }
-
-    function toggleDeductCategorySelect() {
-      const check = document.getElementById('spDeductCheck').checked;
-      const container = document.getElementById('spDeductCategoryContainer');
-      if (check) {
-        container.classList.remove('hidden');
-      } else {
-        container.classList.add('hidden');
-      }
-    }
-
-    function copyWalletCode() {
-      const code = document.getElementById('sharedWalletCode').textContent;
-      if (!code) return;
-      
-      const el = document.createElement('textarea');
-      el.value = code;
-      document.body.appendChild(el);
-      el.select();
-      document.execCommand('copy');
-      document.body.removeChild(el);
-
-      alert("Código copiado al portapapeles: " + code);
-    }
-
-    function escapeHtml(str) {
-      if (!str) return '';
-      return String(str)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-    }
-
-  </script>
+    closeModal('modalPayment'); e.target.reset(); fillSpCats();
+  });
+}
+</script>
 </body>
 </html>
